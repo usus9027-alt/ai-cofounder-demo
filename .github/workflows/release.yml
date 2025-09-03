@@ -1,0 +1,89 @@
+name: 🏷️ Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: 🏷️ Get version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: 📋 Generate changelog
+      run: |
+        echo "# 🚀 AI Co-founder Platform ${{ steps.version.outputs.version }}" > CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "## ✨ Features" >> CHANGELOG.md
+        echo "- Interactive Canvas Board with Fabric.js" >> CHANGELOG.md
+        echo "- AI Chat Interface with smart responses" >> CHANGELOG.md
+        echo "- 8-Phase Project Navigation" >> CHANGELOG.md
+        echo "- Market Analysis Tools" >> CHANGELOG.md
+        echo "- Export Functionality (PNG)" >> CHANGELOG.md
+        echo "- Responsive Design" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "## 🛠️ Technical Stack" >> CHANGELOG.md
+        echo "- HTML5 + CSS3 + JavaScript" >> CHANGELOG.md
+        echo "- Tailwind CSS for styling" >> CHANGELOG.md
+        echo "- Fabric.js for Canvas functionality" >> CHANGELOG.md
+        echo "- Font Awesome for icons" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "## 🚀 Deployment" >> CHANGELOG.md
+        echo "- GitHub Pages ready" >> CHANGELOG.md
+        echo "- GitHub Actions automated deployment" >> CHANGELOG.md
+        echo "- Static site generation" >> CHANGELOG.md
+        
+    - name: 📦 Create release archive
+      run: |
+        zip -r ai-cofounder-platform-${{ steps.version.outputs.version }}.zip . \
+          -x "*.git*" "*.github*" "node_modules/*" "*.md" "*.yml"
+        
+    - name: 🏷️ Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: "AI Co-founder Platform ${{ steps.version.outputs.version }}"
+        body_path: CHANGELOG.md
+        draft: false
+        prerelease: false
+        
+    - name: 📤 Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./ai-cofounder-platform-${{ steps.version.outputs.version }}.zip
+        asset_name: ai-cofounder-platform-${{ steps.version.outputs.version }}.zip
+        asset_content_type: application/zip
+        
+    - name: ✅ Release created
+      run: |
+        echo "🎉 Release ${{ steps.version.outputs.version }} created successfully!"
+        echo "📦 Archive: ai-cofounder-platform-${{ steps.version.outputs.version }}.zip"
+        echo "🌐 GitHub Pages: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"

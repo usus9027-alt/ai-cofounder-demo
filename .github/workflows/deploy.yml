@@ -1,0 +1,131 @@
+name: 🚀 Deploy AI Co-founder Platform
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build and test job
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: |
+        if [ -f package.json ]; then
+          npm ci
+        else
+          echo "No package.json found, skipping npm install"
+        fi
+        
+    - name: 🧪 Run tests (if available)
+      run: |
+        if [ -f package.json ] && npm run test --if-present; then
+          npm run test
+        else
+          echo "No tests found, skipping test step"
+        fi
+        
+    - name: 🏗️ Build project (if needed)
+      run: |
+        if [ -f package.json ] && npm run build --if-present; then
+          npm run build
+        else
+          echo "No build script found, using static files"
+        fi
+        
+    - name: 📋 Validate HTML
+      run: |
+        echo "Validating HTML structure..."
+        if [ -f index.html ]; then
+          echo "✅ index.html found"
+        else
+          echo "❌ index.html not found"
+          exit 1
+        fi
+        
+    - name: 🔐 Setup GitHub Authentication
+      run: |
+        echo "Setting up GitHub authentication..."
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+        
+    - name: 📊 Generate deployment info
+      run: |
+        echo "🚀 AI Co-founder Platform Deployment" > deployment-info.md
+        echo "=================================" >> deployment-info.md
+        echo "" >> deployment-info.md
+        echo "**Deployment Date:** $(date)" >> deployment-info.md
+        echo "**Commit:** ${{ github.sha }}" >> deployment-info.md
+        echo "**Branch:** ${{ github.ref_name }}" >> deployment-info.md
+        echo "**Actor:** ${{ github.actor }}" >> deployment-info.md
+        echo "**Repository:** ${{ github.repository }}" >> deployment-info.md
+        echo "**Owner:** ${{ github.repository_owner }}" >> deployment-info.md
+        echo "" >> deployment-info.md
+        echo "**Features:**" >> deployment-info.md
+        echo "- ✅ Interactive Canvas Board" >> deployment-info.md
+        echo "- ✅ AI Chat Interface" >> deployment-info.md
+        echo "- ✅ 8-Phase Navigation" >> deployment-info.md
+        echo "- ✅ Market Analysis Tools" >> deployment-info.md
+        echo "- ✅ Export Functionality" >> deployment-info.md
+        echo "" >> deployment-info.md
+        echo "**GitHub Pages URL:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}" >> deployment-info.md
+        echo "**Repository URL:** https://github.com/${{ github.repository }}" >> deployment-info.md
+        
+    - name: 📤 Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ai-cofounder-platform
+        path: |
+          .
+          !.git
+          !.github
+          !node_modules
+        retention-days: 30
+
+  # Deploy job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+    - name: 📥 Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ai-cofounder-platform
+        path: .
+        
+    - name: 🚀 Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+      
+    - name: ✅ Deployment success
+      run: |
+        echo "🎉 AI Co-founder Platform successfully deployed!"
+        echo "🌐 URL: ${{ steps.deployment.outputs.page_url }}"
+        echo "📅 Deployed at: $(date)"

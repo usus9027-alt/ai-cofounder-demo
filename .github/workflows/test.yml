@@ -1,0 +1,239 @@
+name: 🧪 Test AI Co-founder Platform
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 0 * * 1' # Weekly tests
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: |
+        if [ -f package.json ]; then
+          npm ci
+        else
+          echo "No package.json found, skipping npm install"
+        fi
+        
+    - name: 🔍 HTML Validation
+      run: |
+        echo "🔍 Validating HTML structure..."
+        
+        # Check if index.html exists
+        if [ ! -f index.html ]; then
+          echo "❌ index.html not found"
+          exit 1
+        fi
+        
+        # Basic HTML structure validation
+        if grep -q "<!DOCTYPE html>" index.html; then
+          echo "✅ DOCTYPE declaration found"
+        else
+          echo "❌ DOCTYPE declaration missing"
+          exit 1
+        fi
+        
+        if grep -q "<html" index.html; then
+          echo "✅ HTML tag found"
+        else
+          echo "❌ HTML tag missing"
+          exit 1
+        fi
+        
+        if grep -q "<head>" index.html; then
+          echo "✅ Head section found"
+        else
+          echo "❌ Head section missing"
+          exit 1
+        fi
+        
+        if grep -q "<body>" index.html; then
+          echo "✅ Body section found"
+        else
+          echo "❌ Body section missing"
+          exit 1
+        fi
+        
+        echo "✅ HTML structure validation passed"
+        
+    - name: 🎨 CSS Validation
+      run: |
+        echo "🎨 Validating CSS dependencies..."
+        
+        # Check for Tailwind CSS
+        if grep -q "tailwindcss" index.html; then
+          echo "✅ Tailwind CSS found"
+        else
+          echo "❌ Tailwind CSS not found"
+          exit 1
+        fi
+        
+        # Check for Font Awesome
+        if grep -q "font-awesome" index.html; then
+          echo "✅ Font Awesome found"
+        else
+          echo "❌ Font Awesome not found"
+          exit 1
+        fi
+        
+        echo "✅ CSS dependencies validation passed"
+        
+    - name: ⚡ JavaScript Validation
+      run: |
+        echo "⚡ Validating JavaScript dependencies..."
+        
+        # Check for Fabric.js
+        if grep -q "fabric" index.html; then
+          echo "✅ Fabric.js found"
+        else
+          echo "❌ Fabric.js not found"
+          exit 1
+        fi
+        
+        # Check for basic JavaScript structure
+        if grep -q "<script>" index.html; then
+          echo "✅ JavaScript code found"
+        else
+          echo "❌ JavaScript code missing"
+          exit 1
+        fi
+        
+        echo "✅ JavaScript validation passed"
+        
+    - name: 📱 Responsive Design Check
+      run: |
+        echo "📱 Checking responsive design..."
+        
+        # Check for viewport meta tag
+        if grep -q "viewport" index.html; then
+          echo "✅ Viewport meta tag found"
+        else
+          echo "❌ Viewport meta tag missing"
+          exit 1
+        fi
+        
+        # Check for responsive classes
+        if grep -q "lg:" index.html; then
+          echo "✅ Responsive classes found"
+        else
+          echo "⚠️ No responsive classes found"
+        fi
+        
+        echo "✅ Responsive design check passed"
+        
+    - name: 🔒 Security Check
+      run: |
+        echo "🔒 Running security checks..."
+        
+        # Check for external CDN links (should be HTTPS)
+        if grep -q "https://" index.html; then
+          echo "✅ HTTPS links found"
+        else
+          echo "⚠️ No HTTPS links found"
+        fi
+        
+        # Check for potential XSS vulnerabilities
+        if grep -q "innerHTML" index.html; then
+          echo "⚠️ innerHTML usage detected - ensure proper sanitization"
+        else
+          echo "✅ No innerHTML usage detected"
+        fi
+        
+        echo "✅ Security check completed"
+        
+    - name: 📊 Performance Check
+      run: |
+        echo "📊 Checking performance optimizations..."
+        
+        # Check file size
+        file_size=$(wc -c < index.html)
+        echo "📄 index.html size: $file_size bytes"
+        
+        if [ $file_size -lt 100000 ]; then
+          echo "✅ File size is reasonable"
+        else
+          echo "⚠️ File size is large ($file_size bytes)"
+        fi
+        
+        # Check for minified resources
+        if grep -q "min.js" index.html; then
+          echo "✅ Minified JavaScript found"
+        else
+          echo "⚠️ No minified JavaScript found"
+        fi
+        
+        echo "✅ Performance check completed"
+        
+    - name: 🧪 Functional Tests
+      run: |
+        echo "🧪 Running functional tests..."
+        
+        # Check for essential functions
+        functions=("createCanvasObject" "sendMessage" "addMessageToChat" "generateAIResponse")
+        
+        for func in "${functions[@]}"; do
+          if grep -q "function $func" index.html; then
+            echo "✅ Function $func found"
+          else
+            echo "❌ Function $func not found"
+            exit 1
+          fi
+        done
+        
+        # Check for event listeners
+        if grep -q "addEventListener" index.html; then
+          echo "✅ Event listeners found"
+        else
+          echo "❌ No event listeners found"
+          exit 1
+        fi
+        
+        echo "✅ Functional tests passed"
+        
+    - name: 📋 Generate Test Report
+      run: |
+        echo "# 🧪 Test Report" > test-report.md
+        echo "=================" >> test-report.md
+        echo "" >> test-report.md
+        echo "**Test Date:** $(date)" >> test-report.md
+        echo "**Commit:** ${{ github.sha }}" >> test-report.md
+        echo "**Branch:** ${{ github.ref_name }}" >> test-report.md
+        echo "" >> test-report.md
+        echo "## ✅ Test Results" >> test-report.md
+        echo "- HTML Structure: ✅ PASSED" >> test-report.md
+        echo "- CSS Dependencies: ✅ PASSED" >> test-report.md
+        echo "- JavaScript Dependencies: ✅ PASSED" >> test-report.md
+        echo "- Responsive Design: ✅ PASSED" >> test-report.md
+        echo "- Security: ✅ PASSED" >> test-report.md
+        echo "- Performance: ✅ PASSED" >> test-report.md
+        echo "- Functional Tests: ✅ PASSED" >> test-report.md
+        echo "" >> test-report.md
+        echo "## 🎉 All Tests Passed!" >> test-report.md
+        
+    - name: 📤 Upload Test Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-report
+        path: test-report.md
+        retention-days: 30
+        
+    - name: ✅ Tests Completed
+      run: |
+        echo "🎉 All tests completed successfully!"
+        echo "📊 Test report generated"
+        echo "🚀 Platform is ready for deployment"

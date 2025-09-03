@@ -1,0 +1,109 @@
+name: 🤖 Auto Setup AI Co-founder Platform
+
+on:
+  workflow_dispatch:
+    inputs:
+      github_token:
+        description: 'GitHub Personal Access Token'
+        required: true
+        default: 'YOUR_GITHUB_TOKEN'
+      repository_name:
+        description: 'Repository name (e.g., ai-cofounder-demo)'
+        required: true
+        default: 'ai-cofounder-demo'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: write
+
+jobs:
+  auto-setup:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🔐 Setup GitHub Authentication
+      run: |
+        echo "Setting up GitHub authentication with provided token..."
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+        
+    - name: 📊 Get Repository Information
+      id: repo-info
+      run: |
+        echo "owner=${{ github.repository_owner }}" >> $GITHUB_OUTPUT
+        echo "repo=${{ github.event.inputs.repository_name }}" >> $GITHUB_OUTPUT
+        echo "pages_url=https://${{ github.repository_owner }}.github.io/${{ github.event.inputs.repository_name }}" >> $GITHUB_OUTPUT
+        echo "repo_url=https://github.com/${{ github.repository_owner }}/${{ github.event.inputs.repository_name }}" >> $GITHUB_OUTPUT
+        
+    - name: 🔧 Update Documentation with Real Data
+      run: |
+        echo "Updating documentation with real repository information..."
+        
+        # Update QUICK_START.md
+        sed -i "s/YOUR_USERNAME/${{ github.repository_owner }}/g" QUICK_START.md
+        sed -i "s/ai-cofounder-demo/${{ github.event.inputs.repository_name }}/g" QUICK_START.md
+        
+        # Update DEPLOYMENT.md
+        sed -i "s/username/${{ github.repository_owner }}/g" DEPLOYMENT.md
+        sed -i "s/repository-name/${{ github.event.inputs.repository_name }}/g" DEPLOYMENT.md
+        
+        # Update package.json
+        sed -i "s/username/${{ github.repository_owner }}/g" package.json
+        sed -i "s/ai-cofounder-demo/${{ github.event.inputs.repository_name }}/g" package.json
+        
+        echo "✅ Documentation updated with real data"
+        
+    - name: 📋 Generate Setup Report
+      run: |
+        echo "# 🤖 Auto Setup Report" > setup-report.md
+        echo "=====================" >> setup-report.md
+        echo "" >> setup-report.md
+        echo "**Setup Date:** $(date)" >> setup-report.md
+        echo "**Repository Owner:** ${{ github.repository_owner }}" >> setup-report.md
+        echo "**Repository Name:** ${{ github.event.inputs.repository_name }}" >> setup-report.md
+        echo "**GitHub Pages URL:** ${{ steps.repo-info.outputs.pages_url }}" >> setup-report.md
+        echo "**Repository URL:** ${{ steps.repo-info.outputs.repo_url }}" >> setup-report.md
+        echo "" >> setup-report.md
+        echo "## ✅ Completed Tasks" >> setup-report.md
+        echo "- Updated QUICK_START.md with real username" >> setup-report.md
+        echo "- Updated DEPLOYMENT.md with real repository name" >> setup-report.md
+        echo "- Updated package.json with real URLs" >> setup-report.md
+        echo "- Generated setup report" >> setup-report.md
+        echo "" >> setup-report.md
+        echo "## 🚀 Next Steps" >> setup-report.md
+        echo "1. Add GitHub token to repository secrets" >> setup-report.md
+        echo "2. Enable GitHub Pages in repository settings" >> setup-report.md
+        echo "3. Run the deploy workflow" >> setup-report.md
+        echo "4. Your site will be available at: ${{ steps.repo-info.outputs.pages_url }}" >> setup-report.md
+        
+    - name: 📤 Upload Setup Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: setup-report
+        path: setup-report.md
+        retention-days: 30
+        
+    - name: 💾 Commit Changes
+      run: |
+        git add .
+        git commit -m "🤖 Auto setup: Updated documentation with real repository data" || echo "No changes to commit"
+        
+    - name: ✅ Setup Complete
+      run: |
+        echo "🎉 Auto setup completed successfully!"
+        echo "📊 Repository Information:"
+        echo "   Owner: ${{ github.repository_owner }}"
+        echo "   Repository: ${{ github.event.inputs.repository_name }}"
+        echo "   Pages URL: ${{ steps.repo-info.outputs.pages_url }}"
+        echo "   Repository URL: ${{ steps.repo-info.outputs.repo_url }}"
+        echo ""
+        echo "📋 Next steps:"
+        echo "1. Add your GitHub token to repository secrets"
+        echo "2. Enable GitHub Pages in repository settings"
+        echo "3. Run the deploy workflow"
+        echo "4. Your site will be available at: ${{ steps.repo-info.outputs.pages_url }}"

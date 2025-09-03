@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Co-founder Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/fabric@5.3.0/dist/fabric.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .canvas-container {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+        }
+        .phase-active {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        .object-problem { background: #fef2f2; border-color: #fca5a5; }
+        .object-insight { background: #eff6ff; border-color: #93c5fd; }
+        .object-persona { background: #f0fdf4; border-color: #86efac; }
+        .object-solution { background: #faf5ff; border-color: #c4b5fd; }
+        .object-milestone { background: #fffbeb; border-color: #fcd34d; }
+        .object-note { background: #f9fafb; border-color: #d1d5db; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-robot text-3xl"></i>
+                    <h1 class="text-2xl font-bold">AI Co-founder Platform</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="exportBtn" class="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition">
+                        <i class="fas fa-download mr-2"></i>Экспорт
+                    </button>
+                    <button id="saveBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-save mr-2"></i>Сохранить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Phase Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="container mx-auto px-4">
+            <div class="flex space-x-1 py-4 overflow-x-auto">
+                <button class="phase-btn phase-active px-4 py-2 rounded-lg whitespace-nowrap" data-phase="1">
+                    <i class="fas fa-lightbulb mr-2"></i>1. Проблема & Идея
+                </button>
+                <button class="phase-btn px-4 py-2 rounded-lg whitespace-nowrap hover:bg-gray-100" data-phase="2">
+                    <i class="fas fa-chart-line mr-2"></i>2. Исследование рынка
+                </button>
+                <button class="phase-btn px-4 py-2 rounded-lg whitespace-nowrap hover:bg-gray-100" data-phase="3">
+                    <i class="fas fa-user mr-2"></i>3. Персона пользователя
+                </button>
+                <button class="phase-btn px-4 py-2 rounded-lg whitespace-nowrap hover:bg-gray-100" data-phase="4">
+                    <i class="fas fa-cube mr-2"></i>4. Решение & MVP
+                </button>
+                <button class="phase-btn px-4 py-2 rounded-lg whitespace-nowrap hover:bg-gray-100" data-phase="5">
+                    <i class="fas fa-hammer mr-2"></i>5. Создание продукта
+                </button>
+                <button class="phase-btn px-4 py-2 rounded-lg whitespace-nowrap hover:bg-gray-100" data-phase="6">
+                    <i class="fas fa-bullhorn mr-2"></i>6. Маркетинговый план
+                </button>
+                <button class="phase-btn px-4 py-2 rounded-lg whitespace-nowrap hover:bg-gray-100" data-phase="7">
+                    <i class="fas fa-rocket mr-2"></i>7. Подготовка к запуску
+                </button>
+                <button class="phase-btn px-4 py-2 rounded-lg whitespace-nowrap hover:bg-gray-100" data-phase="8">
+                    <i class="fas fa-flag-checkered mr-2"></i>8. Запуск
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-screen">
+            <!-- Chat Panel -->
+            <div class="lg:col-span-1 bg-white rounded-lg shadow-sm border">
+                <div class="p-4 border-b">
+                    <h3 class="text-lg font-semibold flex items-center">
+                        <i class="fas fa-comments mr-2 text-blue-600"></i>
+                        AI Чат
+                    </h3>
+                </div>
+                <div class="flex flex-col h-full">
+                    <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-4">
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-robot text-blue-600 mt-1"></i>
+                                <div>
+                                    <p class="text-sm text-gray-700">Привет! Я твой AI-кофаундер. Расскажи мне о своей идее, и я помогу тебе пройти путь от идеи до запуска продукта!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 border-t">
+                        <div class="flex space-x-2">
+                            <input type="text" id="chatInput" placeholder="Опишите вашу идею..." 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button id="sendBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex space-x-2">
+                            <button id="analyzeMarketBtn" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition">
+                                <i class="fas fa-chart-line mr-1"></i>Анализ рынка
+                            </button>
+                            <button id="generateIdeasBtn" class="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition">
+                                <i class="fas fa-lightbulb mr-1"></i>Генерация идей
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvas Panel -->
+            <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border">
+                <div class="p-4 border-b">
+                    <h3 class="text-lg font-semibold flex items-center">
+                        <i class="fas fa-palette mr-2 text-green-600"></i>
+                        Canvas Доска
+                    </h3>
+                </div>
+                <div class="p-4">
+                    <div id="canvasContainer" class="canvas-container w-full h-96 rounded-lg relative">
+                        <canvas id="canvas" width="800" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools Panel -->
+            <div class="lg:col-span-1 bg-white rounded-lg shadow-sm border">
+                <div class="p-4 border-b">
+                    <h3 class="text-lg font-semibold flex items-center">
+                        <i class="fas fa-tools mr-2 text-purple-600"></i>
+                        Инструменты
+                    </h3>
+                </div>
+                <div class="p-4 space-y-4">
+                    <!-- Object Types -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">Типы объектов</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="object-type-btn object-problem p-2 rounded border text-xs" data-type="problem">
+                                <i class="fas fa-exclamation-triangle text-red-500"></i><br>Проблема
+                            </button>
+                            <button class="object-type-btn object-insight p-2 rounded border text-xs" data-type="insight">
+                                <i class="fas fa-lightbulb text-blue-500"></i><br>Инсайт
+                            </button>
+                            <button class="object-type-btn object-persona p-2 rounded border text-xs" data-type="persona">
+                                <i class="fas fa-user text-green-500"></i><br>Персона
+                            </button>
+                            <button class="object-type-btn object-solution p-2 rounded border text-xs" data-type="solution">
+                                <i class="fas fa-cube text-purple-500"></i><br>Решение
+                            </button>
+                            <button class="object-type-btn object-milestone p-2 rounded border text-xs" data-type="milestone">
+                                <i class="fas fa-flag text-yellow-500"></i><br>Этап
+                            </button>
+                            <button class="object-type-btn object-note p-2 rounded border text-xs" data-type="note">
+                                <i class="fas fa-sticky-note text-gray-500"></i><br>Заметка
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Tools -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">Инструменты Canvas</h4>
+                        <div class="space-y-2">
+                            <button id="selectTool" class="w-full bg-gray-100 hover:bg-gray-200 p-2 rounded text-sm">
+                                <i class="fas fa-mouse-pointer mr-2"></i>Выбор
+                            </button>
+                            <button id="panTool" class="w-full bg-gray-100 hover:bg-gray-200 p-2 rounded text-sm">
+                                <i class="fas fa-hand-paper mr-2"></i>Перемещение
+                            </button>
+                            <button id="zoomIn" class="w-full bg-gray-100 hover:bg-gray-200 p-2 rounded text-sm">
+                                <i class="fas fa-search-plus mr-2"></i>Увеличить
+                            </button>
+                            <button id="zoomOut" class="w-full bg-gray-100 hover:bg-gray-200 p-2 rounded text-sm">
+                                <i class="fas fa-search-minus mr-2"></i>Уменьшить
+                            </button>
+                            <button id="clearCanvas" class="w-full bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded text-sm">
+                                <i class="fas fa-trash mr-2"></i>Очистить
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Market Analysis -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">Анализ рынка</h4>
+                        <div class="space-y-2">
+                            <button id="twitterAnalysis" class="w-full bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded text-sm">
+                                <i class="fab fa-twitter mr-2"></i>Twitter анализ
+                            </button>
+                            <button id="competitorAnalysis" class="w-full bg-green-100 hover:bg-green-200 text-green-700 p-2 rounded text-sm">
+                                <i class="fas fa-chart-bar mr-2"></i>Анализ конкурентов
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center space-x-3">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span class="text-lg">AI анализирует...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Canvas
+        const canvas = new fabric.Canvas('canvas');
+        let currentPhase = 1;
+        let selectedObjectType = 'note';
+
+        // Фазы проекта
+        const phases = {
+            1: { name: 'Проблема & Идея', description: 'Определение проблемы и идеи' },
+            2: { name: 'Исследование рынка', description: 'Анализ рынка и конкурентов' },
+            3: { name: 'Персона пользователя', description: 'Создание портрета целевой аудитории' },
+            4: { name: 'Решение & MVP', description: 'Разработка решения и MVP' },
+            5: { name: 'Создание продукта', description: 'Создание продукта' },
+            6: { name: 'Маркетинговый план', description: 'Разработка маркетинговой стратегии' },
+            7: { name: 'Подготовка к запуску', description: 'Подготовка к запуску' },
+            8: { name: 'Запуск', description: 'Запуск продукта' }
+        };
+
+        // Навигация по фазам
+        document.querySelectorAll('.phase-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('phase-active'));
+                btn.classList.add('phase-active');
+                currentPhase = parseInt(btn.dataset.phase);
+                updatePhaseInfo();
+            });
+        });
+
+        function updatePhaseInfo() {
+            const phase = phases[currentPhase];
+            console.log(`Текущая фаза: ${phase.name} - ${phase.description}`);
+        }
+
+        // Выбор типа объекта
+        document.querySelectorAll('.object-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.object-type-btn').forEach(b => b.classList.remove('ring-2', 'ring-blue-500'));
+                btn.classList.add('ring-2', 'ring-blue-500');
+                selectedObjectType = btn.dataset.type;
+            });
+        });
+
+        // Создание объекта на Canvas
+        function createCanvasObject(type, content, x = 100, y = 100) {
+            const colors = {
+                problem: '#fef2f2',
+                insight: '#eff6ff',
+                persona: '#f0fdf4',
+                solution: '#faf5ff',
+                milestone: '#fffbeb',
+                note: '#f9fafb'
+            };
+
+            const icons = {
+                problem: '⚠️',
+                insight: '💡',
+                persona: '👤',
+                solution: '🔧',
+                milestone: '🏁',
+                note: '📝'
+            };
+
+            const rect = new fabric.Rect({
+                left: x,
+                top: y,
+                width: 200,
+                height: 120,
+                fill: colors[type] || colors.note,
+                stroke: '#d1d5db',
+                strokeWidth: 2,
+                rx: 8,
+                ry: 8
+            });
+
+            const text = new fabric.Text(`${icons[type]} ${content}`, {
+                left: x + 10,
+                top: y + 10,
+                fontSize: 14,
+                fill: '#374151',
+                width: 180,
+                textAlign: 'left'
+            });
+
+            const group = new fabric.Group([rect, text], {
+                left: x,
+                top: y
+            });
+
+            canvas.add(group);
+            canvas.renderAll();
+        }
+
+        // Чат функциональность
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessageToChat('user', message);
+            input.value = '';
+
+            // Имитация ответа AI
+            setTimeout(() => {
+                const aiResponse = generateAIResponse(message);
+                addMessageToChat('ai', aiResponse);
+                
+                // Автоматическое создание объектов на Canvas
+                if (shouldCreateCanvasObject(message)) {
+                    createCanvasObject(selectedObjectType, extractKeyContent(message));
+                }
+            }, 1000);
+        }
+
+        function addMessageToChat(sender, message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            
+            if (sender === 'user') {
+                messageDiv.className = 'bg-gray-100 p-3 rounded-lg ml-8';
+                messageDiv.innerHTML = `
+                    <div class="flex items-start space-x-2">
+                        <i class="fas fa-user text-gray-600 mt-1"></i>
+                        <p class="text-sm text-gray-700">${message}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.className = 'bg-blue-50 p-3 rounded-lg';
+                messageDiv.innerHTML = `
+                    <div class="flex items-start space-x-2">
+                        <i class="fas fa-robot text-blue-600 mt-1"></i>
+                        <div>
+                            <p class="text-sm text-gray-700">${message}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function generateAIResponse(userMessage) {
+            const responses = [
+                "Отличная идея! Давайте проанализируем её подробнее. Какие проблемы она решает?",
+                "Интересно! Расскажите больше о вашей целевой аудитории.",
+                "Хорошая мысль! Давайте создадим план развития этой идеи.",
+                "Отлично! Теперь давайте проанализируем конкурентов на рынке.",
+                "Понятно! Давайте определим ключевые особенности вашего продукта.",
+                "Хорошо! Теперь нужно подумать о маркетинговой стратегии.",
+                "Отлично! Давайте подготовим план запуска продукта.",
+                "Превосходно! Ваша идея готова к реализации!"
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function shouldCreateCanvasObject(message) {
+            const keywords = ['проблема', 'идея', 'решение', 'пользователь', 'анализ', 'инсайт'];
+            return keywords.some(keyword => message.toLowerCase().includes(keyword));
+        }
+
+        function extractKeyContent(message) {
+            // Простое извлечение ключевого контента
+            return message.length > 50 ? message.substring(0, 50) + '...' : message;
+        }
+
+        // Анализ рынка
+        document.getElementById('analyzeMarketBtn').addEventListener('click', () => {
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                addMessageToChat('ai', 'Анализ рынка завершен! Создаю объекты на Canvas...');
+                createCanvasObject('insight', 'Анализ рынка: высокий потенциал');
+                createCanvasObject('problem', 'Основные проблемы пользователей');
+            }, 2000);
+        });
+
+        // Twitter анализ
+        document.getElementById('twitterAnalysis').addEventListener('click', () => {
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                addMessageToChat('ai', 'Twitter анализ завершен! Найдено 15 релевантных твитов.');
+                createCanvasObject('insight', 'Twitter инсайты: пользователи жалуются на...');
+            }, 1500);
+        });
+
+        // Инструменты Canvas
+        document.getElementById('selectTool').addEventListener('click', () => {
+            canvas.isDrawingMode = false;
+            canvas.selection = true;
+        });
+
+        document.getElementById('panTool').addEventListener('click', () => {
+            canvas.isDrawingMode = false;
+            canvas.selection = false;
+        });
+
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            canvas.setZoom(canvas.getZoom() * 1.1);
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            canvas.setZoom(canvas.getZoom() * 0.9);
+        });
+
+        document.getElementById('clearCanvas').addEventListener('click', () => {
+            if (confirm('Очистить Canvas?')) {
+                canvas.clear();
+            }
+        });
+
+        // Экспорт
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = 'ai-cofounder-canvas.png';
+            link.href = dataURL;
+            link.click();
+        });
+
+        // Сохранение
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const canvasData = JSON.stringify(canvas.toJSON());
+            localStorage.setItem('ai-cofounder-canvas', canvasData);
+            alert('Canvas сохранен!');
+        });
+
+        // Загрузка сохраненного Canvas
+        function loadCanvas() {
+            const saved = localStorage.getItem('ai-cofounder-canvas');
+            if (saved) {
+                canvas.loadFromJSON(saved, () => {
+                    canvas.renderAll();
+                });
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCanvas();
+            updatePhaseInfo();
+            
+            // Создаем начальные объекты
+            createCanvasObject('problem', 'Определите проблему, которую решает ваша идея', 50, 50);
+            createCanvasObject('insight', 'Добавьте инсайты из анализа рынка', 300, 50);
+            createCanvasObject('persona', 'Опишите вашу целевую аудиторию', 50, 200);
+            createCanvasObject('solution', 'Ваше решение и MVP', 300, 200);
+        });
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "name": "ai-cofounder-demo",
+  "version": "1.0.0",
+  "description": "Демо-версия платформы AI Co-founder с интерактивным Canvas и AI чатом",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx serve .",
+    "dev": "npx live-server --port=3000",
+    "build": "echo 'No build step needed for static HTML'",
+    "deploy": "gh-pages -d .",
+    "deploy:auto": "node scripts/deploy.js",
+    "deploy:full": "node scripts/auto-deploy.js",
+    "test": "echo 'Running basic validation tests' && node scripts/test.js",
+    "validate": "node scripts/validate.js",
+    "release": "node scripts/release.js",
+    "setup": "node scripts/setup.js"
+  },
+  "keywords": [
+    "ai",
+    "cofounder",
+    "canvas",
+    "startup",
+    "entrepreneur",
+    "business",
+    "planning"
+  ],
+  "author": "AI Co-founder Team",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^6.0.0",
+    "live-server": "^1.2.2",
+    "serve": "^14.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/ai-cofounder-demo.git"
+  },
+  "homepage": "https://username.github.io/ai-cofounder-demo"
+}
