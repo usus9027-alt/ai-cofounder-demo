@@ -41,51 +41,50 @@
     </header>
 
     <!-- Main Content -->
-    <div class="container mx-auto px-4 py-6">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-screen">
-            <!-- Chat Panel -->
-            <div class="bg-white rounded-lg shadow-sm border">
-                <div class="p-4 border-b">
-                    <h3 class="text-lg font-semibold flex items-center">
-                        <i class="fas fa-comments mr-2 text-blue-600"></i>
-                        AI Чат
-                    </h3>
+    <div class="flex h-screen">
+        <!-- Chat Panel - 1/3 экрана -->
+        <div class="w-1/3 bg-white border-r flex flex-col">
+            <div class="p-4 border-b">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-comments mr-2 text-blue-600"></i>
+                    AI Чат
+                </h3>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div class="bg-blue-50 p-3 rounded-lg">
+                    <div class="flex items-start space-x-2">
+                        <i class="fas fa-robot text-blue-600 mt-1"></i>
+                        <div>
+                            <p class="text-sm text-gray-700">Привет! Я твой AI-кофаундер. Расскажи мне о своей идее, и я помогу тебе пройти путь от идеи до запуска продукта!</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex flex-col h-full">
-                    <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-4">
-                        <div class="bg-blue-50 p-3 rounded-lg">
-                            <div class="flex items-start space-x-2">
-                                <i class="fas fa-robot text-blue-600 mt-1"></i>
-                                <div>
-                                    <p class="text-sm text-gray-700">Привет! Я твой AI-кофаундер. Расскажи мне о своей идее, и я помогу тебе пройти путь от идеи до запуска продукта!</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t">
-                        <div class="flex space-x-2">
-                            <input type="text" id="chatInput" placeholder="Опишите вашу идею..." 
-                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <button id="sendBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
+                <div id="chatMessages" class="space-y-4">
+                    <!-- Сообщения чата будут добавляться сюда -->
                 </div>
             </div>
-
-            <!-- Canvas Panel -->
-            <div class="bg-white rounded-lg shadow-sm border">
-                <div class="p-4 border-b">
-                    <h3 class="text-lg font-semibold flex items-center">
-                        <i class="fas fa-palette mr-2 text-green-600"></i>
-                        Canvas Доска
-                    </h3>
+            <div class="p-4 border-t">
+                <div class="flex space-x-2">
+                    <input type="text" id="chatInput" placeholder="Опишите вашу идею..." 
+                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="sendBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
                 </div>
-                <div class="p-4">
-                    <div id="canvasContainer" class="canvas-container w-full h-96 rounded-lg relative">
-                        <canvas id="canvas" width="800" height="400"></canvas>
-                    </div>
+            </div>
+        </div>
+
+        <!-- Canvas Panel - 2/3 экрана -->
+        <div class="w-2/3 bg-white flex flex-col">
+            <div class="p-4 border-b">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-palette mr-2 text-green-600"></i>
+                    Canvas Доска
+                </h3>
+            </div>
+            <div class="flex-1 p-4">
+                <div id="canvasContainer" class="w-full h-full rounded-lg relative border-2 border-dashed border-gray-300">
+                    <canvas id="canvas" class="w-full h-full"></canvas>
                 </div>
             </div>
         </div>
@@ -103,8 +102,20 @@
 
     <script>
         // Инициализация Canvas
-        const canvas = new fabric.Canvas('canvas');
+        let canvas;
         let selectedObjectType = 'note';
+
+        function initCanvas() {
+            const canvasContainer = document.getElementById('canvasContainer');
+            const containerWidth = canvasContainer.clientWidth - 20; // отступы
+            const containerHeight = canvasContainer.clientHeight - 20;
+            
+            canvas = new fabric.Canvas('canvas', {
+                width: containerWidth,
+                height: containerHeight,
+                backgroundColor: '#f8fafc'
+            });
+        }
 
         // Создание объекта на Canvas
         function createCanvasObject(type, content, x = 100, y = 100) {
@@ -207,7 +218,10 @@
             }
             
             chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Прокрутка к последнему сообщению
+            const chatContainer = chatMessages.parentElement;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
         function generateAIResponse(userMessage) {
@@ -255,7 +269,22 @@
 
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
+            initCanvas();
             loadCanvas();
+            
+            // Обработка изменения размера окна
+            window.addEventListener('resize', () => {
+                setTimeout(() => {
+                    const canvasContainer = document.getElementById('canvasContainer');
+                    const containerWidth = canvasContainer.clientWidth - 20;
+                    const containerHeight = canvasContainer.clientHeight - 20;
+                    
+                    canvas.setDimensions({
+                        width: containerWidth,
+                        height: containerHeight
+                    });
+                }, 100);
+            });
         });
 
         function showLoading() {
